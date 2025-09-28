@@ -1,0 +1,919 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>محاسبه‌گر BMI - شاخص توده بدنی</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 10px;
+            margin: 0;
+        }
+
+        .container {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            padding: 20px;
+            max-width: 500px;
+            width: 100%;
+            text-align: center;
+            margin: 10px;
+        }
+
+        /* موبایل */
+        @media (max-width: 768px) {
+            body {
+                padding: 5px;
+                align-items: flex-start;
+                padding-top: 20px;
+            }
+            
+            .container {
+                padding: 15px;
+                margin: 5px;
+                border-radius: 15px;
+                max-width: 100%;
+            }
+            
+            h1 {
+                font-size: 2em !important;
+                margin-bottom: 20px !important;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .container {
+                padding: 10px;
+                margin: 2px;
+                border-radius: 10px;
+            }
+            
+            h1 {
+                font-size: 1.8em !important;
+                margin-bottom: 15px !important;
+            }
+            
+            .form-group {
+                margin-bottom: 20px !important;
+            }
+            
+            input[type="number"], select {
+                padding: 12px !important;
+                font-size: 1em !important;
+            }
+            
+            .calculate-btn {
+                padding: 12px 30px !important;
+                font-size: 1.1em !important;
+            }
+        }
+
+        h1 {
+            color: #333;
+            margin-bottom: 30px;
+            font-size: 2.5em;
+            font-weight: 300;
+        }
+
+        .form-group {
+            margin-bottom: 25px;
+            text-align: right;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            color: #555;
+            font-weight: 500;
+            font-size: 1.1em;
+        }
+
+        input[type="number"], select {
+            width: 100%;
+            padding: 15px;
+            border: 2px solid #e1e5e9;
+            border-radius: 10px;
+            font-size: 1.1em;
+            transition: border-color 0.3s ease;
+            text-align: center;
+            background: white;
+        }
+
+        input[type="number"]:focus, select:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        select {
+            text-align: right;
+            cursor: pointer;
+        }
+
+        .unit {
+            color: #888;
+            font-size: 0.9em;
+            margin-top: 5px;
+        }
+
+        .calculate-btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 15px 40px;
+            border-radius: 50px;
+            font-size: 1.2em;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            margin: 20px 0;
+        }
+
+        .calculate-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(102, 126, 234, 0.3);
+        }
+
+        .result {
+            margin-top: 30px;
+            padding: 25px;
+            border-radius: 15px;
+            display: none;
+        }
+
+        .result.show {
+            display: block;
+            animation: fadeIn 0.5s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .bmi-value {
+            font-size: 3em;
+            font-weight: bold;
+            margin: 15px 0;
+        }
+
+        .bmi-category {
+            font-size: 1.5em;
+            font-weight: 600;
+            margin: 15px 0;
+        }
+
+        .bmi-description {
+            font-size: 1.1em;
+            line-height: 1.6;
+            margin-top: 15px;
+        }
+
+        /* موبایل - نتایج */
+        @media (max-width: 768px) {
+            .bmi-value {
+                font-size: 2.5em !important;
+            }
+            
+            .bmi-category {
+                font-size: 1.3em !important;
+            }
+            
+            .bmi-description {
+                font-size: 1em !important;
+            }
+            
+            .result {
+                padding: 20px !important;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .bmi-value {
+                font-size: 2em !important;
+            }
+            
+            .bmi-category {
+                font-size: 1.2em !important;
+            }
+            
+            .bmi-description {
+                font-size: 0.95em !important;
+            }
+            
+            .result {
+                padding: 15px !important;
+            }
+        }
+
+        .underweight { background: #e3f2fd; color: #1976d2; }
+        .normal { background: #e8f5e8; color: #2e7d32; }
+        .overweight { background: #fff3e0; color: #f57c00; }
+        .obese { background: #ffebee; color: #d32f2f; }
+
+        .error {
+            background: #ffebee;
+            color: #d32f2f;
+            padding: 15px;
+            border-radius: 10px;
+            margin: 15px 0;
+            display: none;
+        }
+
+        .error.show {
+            display: block;
+        }
+
+        .info-box {
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 20px;
+            margin-top: 30px;
+            text-align: right;
+        }
+
+        .info-box h3 {
+            color: #333;
+            margin-bottom: 15px;
+        }
+
+        .info-box p {
+            color: #666;
+            line-height: 1.6;
+            margin-bottom: 10px;
+        }
+
+        .weight-goal {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 15px;
+            padding: 20px;
+            margin-top: 20px;
+            text-align: right;
+        }
+
+        .weight-goal h3 {
+            color: #333;
+            margin-bottom: 15px;
+            font-size: 1.3em;
+        }
+
+        .weight-info {
+            background: rgba(255, 255, 255, 0.8);
+            padding: 12px 15px;
+            border-radius: 8px;
+            margin: 8px 0;
+            font-size: 1.1em;
+            border-right: 4px solid #667eea;
+        }
+
+        .weight-info.highlight {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            font-weight: bold;
+            font-size: 1.2em;
+            border-right: none;
+        }
+
+        .weight-range {
+            background: #e8f5e8;
+            color: #2e7d32;
+            padding: 15px;
+            border-radius: 10px;
+            margin: 15px 0;
+            font-weight: 500;
+        }
+
+        .recommendations {
+            background: #fff3e0;
+            color: #f57c00;
+            padding: 15px;
+            border-radius: 10px;
+            margin-top: 15px;
+            text-align: right;
+        }
+
+        .recommendations h4 {
+            margin-bottom: 10px;
+            color: #e65100;
+        }
+
+        .recommendations ul {
+            list-style: none;
+            padding: 0;
+        }
+
+        .recommendations li {
+            margin: 8px 0;
+            padding-right: 20px;
+            position: relative;
+        }
+
+        .recommendations li:before {
+            content: "✓";
+            position: absolute;
+            right: 0;
+            color: #4caf50;
+            font-weight: bold;
+        }
+
+        .metabolism-info {
+            background: #e3f2fd;
+            color: #1976d2;
+            padding: 15px;
+            border-radius: 10px;
+            margin: 15px 0;
+            text-align: right;
+        }
+
+        .personalized-plan {
+            background: #f3e5f5;
+            color: #7b1fa2;
+            padding: 20px;
+            border-radius: 10px;
+            margin: 15px 0;
+            text-align: right;
+        }
+
+        .personalized-plan h4 {
+            margin-bottom: 15px;
+            color: #4a148c;
+        }
+
+        .plan-section {
+            margin: 15px 0;
+            padding: 15px;
+            background: rgba(255, 255, 255, 0.7);
+            border-radius: 8px;
+        }
+
+        .plan-section h5 {
+            color: #4a148c;
+            margin-bottom: 10px;
+        }
+
+        .plan-section ul {
+            list-style: none;
+            padding: 0;
+        }
+
+        .plan-section li {
+            margin: 8px 0;
+            padding-right: 20px;
+            position: relative;
+        }
+
+        .plan-section li:before {
+            content: "•";
+            position: absolute;
+            right: 0;
+            color: #7b1fa2;
+            font-weight: bold;
+        }
+
+        /* موبایل - بخش‌های اضافی */
+        @media (max-width: 768px) {
+            .weight-goal {
+                padding: 15px !important;
+            }
+            
+            .weight-info {
+                padding: 10px 12px !important;
+                font-size: 1em !important;
+            }
+            
+            .weight-info.highlight {
+                font-size: 1.1em !important;
+            }
+            
+            .metabolism-info, .weight-range {
+                padding: 12px !important;
+                font-size: 0.95em !important;
+            }
+            
+            .personalized-plan {
+                padding: 15px !important;
+            }
+            
+            .plan-section {
+                padding: 12px !important;
+                margin: 12px 0 !important;
+            }
+            
+            .recommendations {
+                padding: 12px !important;
+            }
+            
+            .info-box {
+                padding: 15px !important;
+                margin-top: 20px !important;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .weight-goal {
+                padding: 10px !important;
+            }
+            
+            .weight-info {
+                padding: 8px 10px !important;
+                font-size: 0.95em !important;
+            }
+            
+            .weight-info.highlight {
+                font-size: 1em !important;
+            }
+            
+            .metabolism-info, .weight-range {
+                padding: 10px !important;
+                font-size: 0.9em !important;
+            }
+            
+            .personalized-plan {
+                padding: 12px !important;
+            }
+            
+            .plan-section {
+                padding: 10px !important;
+                margin: 10px 0 !important;
+            }
+            
+            .plan-section h5 {
+                font-size: 1em !important;
+            }
+            
+            .recommendations {
+                padding: 10px !important;
+            }
+            
+            .recommendations h4 {
+                font-size: 1.1em !important;
+            }
+            
+            .info-box {
+                padding: 12px !important;
+                margin-top: 15px !important;
+            }
+            
+            .info-box h3 {
+                font-size: 1.2em !important;
+            }
+            
+            .info-box p {
+                font-size: 0.9em !important;
+            }
+        }
+
+        /* موبایل - راهنما */
+        @media (max-width: 768px) {
+            .mobile-guide {
+                display: block !important;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>محاسبه‌گر BMI</h1>
+        <p style="color: #666; margin-bottom: 30px; font-size: 1.1em;">شاخص توده بدنی خود را محاسبه کنید</p>
+        
+        <!-- موبایل - راهنمای استفاده -->
+        <div class="mobile-guide" style="display: none; background: #e3f2fd; padding: 15px; border-radius: 10px; margin-bottom: 20px; text-align: right; font-size: 0.9em; color: #1976d2;">
+            <strong>راهنمای استفاده:</strong><br>
+            • تمام فیلدها را پر کنید<br>
+            • روی "محاسبه BMI" کلیک کنید<br>
+            • نتیجه و برنامه شخصی‌سازی شده را ببینید
+        </div>
+        
+        <form id="bmiForm">
+            <div class="form-group">
+                <label for="gender">جنسیت</label>
+                <select id="gender" required>
+                    <option value="">انتخاب کنید</option>
+                    <option value="male">مرد</option>
+                    <option value="female">زن</option>
+                </select>
+            </div>
+            
+            <div class="form-group">
+                <label for="age">سن (سال)</label>
+                <input type="number" id="age" min="1" max="120" required>
+                <div class="unit">مثال: 30</div>
+            </div>
+            
+            <div class="form-group">
+                <label for="weight">وزن (کیلوگرم)</label>
+                <input type="number" id="weight" step="0.1" min="1" max="500" required>
+                <div class="unit">مثال: 70</div>
+            </div>
+            
+            <div class="form-group">
+                <label for="height">قد (سانتی‌متر)</label>
+                <input type="number" id="height" step="0.1" min="50" max="300" required>
+                <div class="unit">مثال: 175</div>
+            </div>
+            
+            <button type="submit" class="calculate-btn">محاسبه BMI</button>
+        </form>
+        
+        <div id="error" class="error"></div>
+        
+        <div id="result" class="result">
+            <h2>نتیجه محاسبه</h2>
+            <div id="bmiValue" class="bmi-value"></div>
+            <div id="bmiCategory" class="bmi-category"></div>
+            <div id="bmiDescription" class="bmi-description"></div>
+            
+            <div id="weightGoal" class="weight-goal" style="display: none;">
+                <h3>هدف کاهش وزن</h3>
+                <div id="currentWeight" class="weight-info"></div>
+                <div id="targetWeight" class="weight-info"></div>
+                <div id="weightToLose" class="weight-info highlight"></div>
+                <div id="weightRange" class="weight-range"></div>
+                <div id="metabolismInfo" class="metabolism-info"></div>
+                <div id="personalizedPlan" class="personalized-plan"></div>
+                <div id="recommendations" class="recommendations"></div>
+            </div>
+        </div>
+        
+        <div class="info-box">
+            <h3>دسته‌بندی BMI</h3>
+            <p><strong>کم‌وزن:</strong> کمتر از 18.5</p>
+            <p><strong>وزن طبیعی:</strong> 18.5 - 24.9</p>
+            <p><strong>اضافه‌وزن:</strong> 25 - 29.9</p>
+            <p><strong>چاقی درجه 1:</strong> 30 - 34.9</p>
+            <p><strong>چاقی درجه 2:</strong> 35 - 39.9</p>
+            <p><strong>چاقی درجه 3:</strong> 40 و بیشتر</p>
+        </div>
+    </div>
+
+    <script>
+        document.getElementById('bmiForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const gender = document.getElementById('gender').value;
+            const age = parseInt(document.getElementById('age').value);
+            const weight = parseFloat(document.getElementById('weight').value);
+            const height = parseFloat(document.getElementById('height').value);
+            const errorDiv = document.getElementById('error');
+            const resultDiv = document.getElementById('result');
+            
+            // پاک کردن پیام‌های قبلی
+            errorDiv.classList.remove('show');
+            resultDiv.classList.remove('show');
+            
+            // اعتبارسنجی
+            if (!gender) {
+                showError('لطفاً جنسیت خود را انتخاب کنید');
+                return;
+            }
+            
+            if (!age || age <= 0 || age > 120) {
+                showError('لطفاً سن معتبر وارد کنید (1 تا 120 سال)');
+                return;
+            }
+            
+            if (!weight || weight <= 0 || weight > 500) {
+                showError('لطفاً وزن معتبر وارد کنید (1 تا 500 کیلوگرم)');
+                return;
+            }
+            
+            if (!height || height <= 0 || height > 300) {
+                showError('لطفاً قد معتبر وارد کنید (50 تا 300 سانتی‌متر)');
+                return;
+            }
+            
+            // محاسبه BMI
+            const heightInMeters = height / 100;
+            const bmi = weight / (heightInMeters * heightInMeters);
+            
+            // نمایش نتیجه
+            showResult(bmi, gender, age, weight, heightInMeters);
+        });
+        
+        function showError(message) {
+            const errorDiv = document.getElementById('error');
+            errorDiv.textContent = message;
+            errorDiv.classList.add('show');
+        }
+        
+        function showResult(bmi, gender, age, weight, heightInMeters) {
+            const resultDiv = document.getElementById('result');
+            const bmiValueDiv = document.getElementById('bmiValue');
+            const bmiCategoryDiv = document.getElementById('bmiCategory');
+            const bmiDescriptionDiv = document.getElementById('bmiDescription');
+            const weightGoalDiv = document.getElementById('weightGoal');
+            
+            // نمایش مقدار BMI
+            bmiValueDiv.textContent = bmi.toFixed(1);
+            
+            // تعیین دسته‌بندی و رنگ
+            let category, description, className;
+            
+            if (bmi < 18.5) {
+                category = 'کم‌وزن';
+                description = 'وزن شما کمتر از حد طبیعی است. توصیه می‌شود با پزشک یا متخصص تغذیه مشورت کنید تا برنامه غذایی مناسبی دریافت کنید.';
+                className = 'underweight';
+            } else if (bmi >= 18.5 && bmi < 25) {
+                category = 'وزن طبیعی';
+                description = 'تبریک! وزن شما در محدوده طبیعی است. برای حفظ این وضعیت، رژیم غذایی متعادل و ورزش منظم را ادامه دهید.';
+                className = 'normal';
+            } else if (bmi >= 25 && bmi < 30) {
+                category = 'اضافه‌وزن';
+                description = 'وزن شما کمی بیشتر از حد طبیعی است. با کاهش کالری دریافتی و افزایش فعالیت بدنی می‌توانید به وزن ایده‌آل برسید.';
+                className = 'overweight';
+            } else if (bmi >= 30 && bmi < 35) {
+                category = 'چاقی درجه 1';
+                description = 'شما در دسته چاقی قرار دارید. توصیه می‌شود حتماً با پزشک مشورت کنید و برنامه کاهش وزن مناسبی دریافت کنید.';
+                className = 'obese';
+            } else if (bmi >= 35 && bmi < 40) {
+                category = 'چاقی درجه 2';
+                description = 'چاقی شما در حد متوسط است. حتماً باید تحت نظر پزشک قرار بگیرید و برنامه درمانی مناسبی دریافت کنید.';
+                className = 'obese';
+            } else {
+                category = 'چاقی درجه 3';
+                description = 'چاقی شما در حد شدید است. این وضعیت می‌تواند خطرات جدی برای سلامتی شما داشته باشد. فوراً با پزشک متخصص مشورت کنید.';
+                className = 'obese';
+            }
+            
+            // اعمال کلاس و نمایش نتیجه
+            resultDiv.className = `result show ${className}`;
+            bmiCategoryDiv.textContent = category;
+            bmiDescriptionDiv.textContent = description;
+            
+            // نمایش بخش هدف کاهش وزن برای افراد دارای اضافه وزن
+            if (bmi >= 25) {
+                showWeightGoal(weight, heightInMeters, bmi, gender, age);
+            } else {
+                weightGoalDiv.style.display = 'none';
+            }
+        }
+        
+        function showWeightGoal(currentWeight, heightInMeters, bmi, gender, age) {
+            const weightGoalDiv = document.getElementById('weightGoal');
+            const currentWeightDiv = document.getElementById('currentWeight');
+            const targetWeightDiv = document.getElementById('targetWeight');
+            const weightToLoseDiv = document.getElementById('weightToLose');
+            const weightRangeDiv = document.getElementById('weightRange');
+            const metabolismInfoDiv = document.getElementById('metabolismInfo');
+            const personalizedPlanDiv = document.getElementById('personalizedPlan');
+            const recommendationsDiv = document.getElementById('recommendations');
+            
+            // محاسبه وزن هدف (BMI = 22.5 که وسط محدوده طبیعی است)
+            const targetBMI = 22.5;
+            const targetWeight = targetBMI * (heightInMeters * heightInMeters);
+            const weightToLose = currentWeight - targetWeight;
+            
+            // محاسبه محدوده وزن مناسب
+            const minWeight = 18.5 * (heightInMeters * heightInMeters);
+            const maxWeight = 24.9 * (heightInMeters * heightInMeters);
+            
+            // محاسبه BMR (Basal Metabolic Rate)
+            let bmr;
+            if (gender === 'male') {
+                bmr = 88.362 + (13.397 * currentWeight) + (4.799 * (heightInMeters * 100)) - (5.677 * age);
+            } else {
+                bmr = 447.593 + (9.247 * currentWeight) + (3.098 * (heightInMeters * 100)) - (4.330 * age);
+            }
+            
+            // محاسبه TDEE (Total Daily Energy Expenditure)
+            const tdee = bmr * 1.55; // فعالیت متوسط
+            
+            // نمایش اطلاعات
+            currentWeightDiv.innerHTML = `<strong>وزن فعلی:</strong> ${currentWeight.toFixed(1)} کیلوگرم`;
+            targetWeightDiv.innerHTML = `<strong>وزن هدف:</strong> ${targetWeight.toFixed(1)} کیلوگرم`;
+            weightToLoseDiv.innerHTML = `<strong>مقدار کاهش مورد نیاز:</strong> ${weightToLose.toFixed(1)} کیلوگرم`;
+            weightRangeDiv.innerHTML = `<strong>محدوده وزن مناسب برای قد شما:</strong> ${minWeight.toFixed(1)} - ${maxWeight.toFixed(1)} کیلوگرم`;
+            
+            // اطلاعات متابولیسم
+            metabolismInfoDiv.innerHTML = `
+                <strong>اطلاعات متابولیسم:</strong><br>
+                • متابولیسم پایه (BMR): ${bmr.toFixed(0)} کالری در روز<br>
+                • کالری مورد نیاز روزانه: ${tdee.toFixed(0)} کالری<br>
+                • کالری هدف برای کاهش وزن: ${(tdee - 500).toFixed(0)} کالری در روز
+            `;
+            
+            // برنامه شخصی‌سازی شده
+            const personalizedPlan = generatePersonalizedPlan(gender, age, weightToLose, tdee);
+            personalizedPlanDiv.innerHTML = personalizedPlan;
+            
+            // توصیه‌های عملی
+            const recommendations = generateRecommendations(gender, age, weightToLose);
+            recommendationsDiv.innerHTML = recommendations;
+            
+            weightGoalDiv.style.display = 'block';
+        }
+        
+        function generatePersonalizedPlan(gender, age, weightToLose, tdee) {
+            let plan = '<h4>برنامه شخصی‌سازی شده برای شما</h4>';
+            
+            // برنامه غذایی
+            plan += `
+                <div class="plan-section">
+                    <h5>برنامه غذایی</h5>
+                    <ul>
+            `;
+            
+            if (gender === 'male') {
+                plan += `
+                    <li>پروتئین: 150-200 گرم در روز (گوشت، ماهی، تخم مرغ)</li>
+                    <li>کربوهیدرات: 200-250 گرم در روز (برنج قهوه‌ای، جو، سیب زمینی)</li>
+                    <li>چربی سالم: 60-80 گرم در روز (آووکادو، آجیل، روغن زیتون)</li>
+                `;
+            } else {
+                plan += `
+                    <li>پروتئین: 120-150 گرم در روز (گوشت، ماهی، تخم مرغ)</li>
+                    <li>کربوهیدرات: 150-200 گرم در روز (برنج قهوه‌ای، جو، سیب زمینی)</li>
+                    <li>چربی سالم: 50-70 گرم در روز (آووکادو، آجیل، روغن زیتون)</li>
+                `;
+            }
+            
+            plan += `
+                    </ul>
+                </div>
+            `;
+            
+            // برنامه ورزشی
+            plan += `
+                <div class="plan-section">
+                    <h5>برنامه ورزشی</h5>
+                    <ul>
+            `;
+            
+            if (age < 30) {
+                plan += `
+                    <li>ورزش هوازی: 45-60 دقیقه، 5-6 روز در هفته</li>
+                    <li>ورزش قدرتی: 3-4 روز در هفته</li>
+                    <li>HIIT: 2-3 جلسه در هفته</li>
+                `;
+            } else if (age < 50) {
+                plan += `
+                    <li>ورزش هوازی: 30-45 دقیقه، 4-5 روز در هفته</li>
+                    <li>ورزش قدرتی: 2-3 روز در هفته</li>
+                    <li>یوگا یا پیلاتس: 2-3 جلسه در هفته</li>
+                `;
+            } else {
+                plan += `
+                    <li>ورزش هوازی ملایم: 30 دقیقه، 4-5 روز در هفته</li>
+                    <li>ورزش قدرتی سبک: 2-3 روز در هفته</li>
+                    <li>پیاده‌روی: روزانه 30-45 دقیقه</li>
+                `;
+            }
+            
+            plan += `
+                    </ul>
+                </div>
+            `;
+            
+            // زمان‌بندی
+            plan += `
+                <div class="plan-section">
+                    <h5>زمان‌بندی کاهش وزن</h5>
+                    <ul>
+            `;
+            
+            if (weightToLose <= 5) {
+                plan += `
+                    <li>هدف: کاهش 0.5 کیلوگرم در هفته</li>
+                    <li>مدت زمان: ${Math.ceil(weightToLose / 0.5)} هفته</li>
+                    <li>کاهش کالری: 500 کالری در روز</li>
+                `;
+            } else if (weightToLose <= 15) {
+                plan += `
+                    <li>هدف: کاهش 0.5-1 کیلوگرم در هفته</li>
+                    <li>مدت زمان: ${Math.ceil(weightToLose / 0.75)} هفته</li>
+                    <li>کاهش کالری: 500-750 کالری در روز</li>
+                `;
+            } else {
+                plan += `
+                    <li>هدف: کاهش 0.5-1 کیلوگرم در هفته</li>
+                    <li>مدت زمان: ${Math.ceil(weightToLose / 0.75)} هفته</li>
+                    <li>کاهش کالری: 500-750 کالری در روز</li>
+                    <li>توصیه: مشورت با متخصص تغذیه</li>
+                `;
+            }
+            
+            plan += `
+                    </ul>
+                </div>
+            `;
+            
+            return plan;
+        }
+        
+        function generateRecommendations(gender, age, weightToLose) {
+            let recommendations = '<h4>توصیه‌های علمی و عملی</h4><ul>';
+            
+            // توصیه‌های عمومی
+            recommendations += `
+                <li>آب کافی بنوشید: 8-10 لیوان در روز</li>
+                <li>خواب کافی: 7-9 ساعت در شب</li>
+                <li>مدیریت استرس: مدیتیشن یا یوگا</li>
+                <li>پیگیری منظم: وزن‌کشی هفتگی</li>
+            `;
+            
+            // توصیه‌های خاص جنسیت
+            if (gender === 'female') {
+                recommendations += `
+                    <li>توجه به چرخه قاعدگی در برنامه‌ریزی</li>
+                    <li>مصرف آهن و فولات کافی</li>
+                    <li>ورزش‌های مناسب برای زنان</li>
+                `;
+            } else {
+                recommendations += `
+                    <li>تمرکز بر ورزش‌های قدرتی</li>
+                    <li>مصرف پروتئین بیشتر</li>
+                    <li>ورزش‌های مناسب برای مردان</li>
+                `;
+            }
+            
+            // توصیه‌های خاص سن
+            if (age < 30) {
+                recommendations += `
+                    <li>ورزش‌های شدید و متنوع</li>
+                    <li>رژیم غذایی انعطاف‌پذیر</li>
+                `;
+            } else if (age < 50) {
+                recommendations += `
+                    <li>تعادل بین کار و ورزش</li>
+                    <li>توجه به سلامت مفاصل</li>
+                `;
+            } else {
+                recommendations += `
+                    <li>ورزش‌های ملایم و ایمن</li>
+                    <li>توجه به سلامت قلب و عروق</li>
+                    <li>مشورت با پزشک قبل از شروع</li>
+                `;
+            }
+            
+            recommendations += '</ul>';
+            return recommendations;
+        }
+        
+        // تشخیص موبایل و بهینه‌سازی
+        function isMobile() {
+            return window.innerWidth <= 768;
+        }
+
+        // بهینه‌سازی برای موبایل
+        if (isMobile()) {
+            // تغییر اندازه فونت‌ها
+            document.documentElement.style.fontSize = '14px';
+            
+            // بهبود تجربه لمسی
+            document.querySelectorAll('input, select, button').forEach(element => {
+                element.style.minHeight = '44px';
+            });
+        }
+
+        // اعتبارسنجی لحظه‌ای
+        document.getElementById('age').addEventListener('input', function() {
+            const value = parseInt(this.value);
+            if (value && (value <= 0 || value > 120)) {
+                this.style.borderColor = '#d32f2f';
+            } else {
+                this.style.borderColor = '#e1e5e9';
+            }
+        });
+        
+        document.getElementById('weight').addEventListener('input', function() {
+            const value = parseFloat(this.value);
+            if (value && (value <= 0 || value > 500)) {
+                this.style.borderColor = '#d32f2f';
+            } else {
+                this.style.borderColor = '#e1e5e9';
+            }
+        });
+        
+        document.getElementById('height').addEventListener('input', function() {
+            const value = parseFloat(this.value);
+            if (value && (value <= 0 || value > 300)) {
+                this.style.borderColor = '#d32f2f';
+            } else {
+                this.style.borderColor = '#e1e5e9';
+            }
+        });
+
+        // بهبود تجربه موبایل
+        window.addEventListener('resize', function() {
+            if (isMobile()) {
+                document.documentElement.style.fontSize = '14px';
+            } else {
+                document.documentElement.style.fontSize = '16px';
+            }
+        });
+    </script>
+</body>
+</html>
